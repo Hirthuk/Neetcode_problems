@@ -1,0 +1,168 @@
+// ✅ NeetCode 75 - Problem 2: Valid Anagram
+// Given two strings `s` and `t`, return true if `t` is an anagram of `s`, and false otherwise.
+
+let s = "ana";
+let t = "naa";
+
+// ----------------------------------
+// ✅ Your Brute Force Attempt 😂
+// ----------------------------------
+
+var isAnagram = function(s, t) {
+    // Convert strings to arrays
+    let sArray = s.split('');
+    let copysArray = structuredClone(sArray); // keep original s
+    let tArray = t.split('');
+
+    // Try to match t elements with s and remove them if found
+    let resultArray = tArray.filter((item, index) => {
+        if (sArray.includes(item)) {
+            // Remove that item from sArray
+            sArray.splice(sArray.indexOf(item), 1);
+            return true;
+        }
+    });
+
+    // If all characters match and lengths are same
+    if (tArray.length == resultArray.length && copysArray.length == tArray.length) {
+        return true;
+    }
+    return false;
+};
+
+
+// ----------------------------------
+// ❌ Your Map Based Attempt
+// ----------------------------------
+
+var isAnagramWrong = function(s, t) {
+    let sMap = new Map();
+    let tMap = new Map();
+
+    // Map index -> character (not useful in this context)
+    let sArray = s.split('');
+    let tArray = t.split('');
+
+    sArray.map((item, index) => {
+        sMap.set(index, item);
+    });
+    tArray.map((item, index) => {
+        tMap.set(index, item);
+    });
+
+    // Comparing by index is flawed, as anagrams can be in any order
+    tMap.forEach((value, key) => {
+        if (sMap.has(key)) {
+            sArray.splice(key, 1);
+        }
+    });
+
+    if (sArray.length == 0 && s.length == t.length) {
+        return true;
+    }
+
+    return false;
+};
+
+// ⚠️ Why this fails?
+// -> It compares letters by index position (key), but anagram allows any order
+// -> Example: s = "ana", t = "naa" would fail due to mismatched positions
+
+
+// ----------------------------------
+// ⭐ Best Leetcode Solution: Use Hashmap
+// ----------------------------------
+
+var isAnagramBest = function(s, t) {
+    // Early return if lengths differ
+    if (s.length !== t.length) return false;
+
+    // Frequency map
+    let count = new Map();
+
+    // Count letters from string s
+    for (let char of s) {
+        count.set(char, (count.get(char) || 0) + 1);
+    }
+
+    // Subtract counts based on string t
+    for (let char of t) {
+        if (!count.has(char)) return false;
+
+        count.set(char, count.get(char) - 1);
+        if (count.get(char) < 0) return false;
+    }
+
+    return true;
+};
+
+// Let me do it on my one with the first one -> We are checking the frequency and count of elements in
+// in Single Map. There is a thing called for(let char of s) -> it will take each charater from the string
+
+var isAnagramBestMine = function (s,t)  {
+
+  if(s.length !== t.length){
+    return false
+  }
+  let count = new Map();
+  for(let char of s){
+    count.set(char,(count.get(char || 0)+1));
+  }
+
+  for(let char of t){
+    if(!count.has(char)){
+      return false
+    }
+
+    count.set(char, count.get(char)-1);
+    if(count.get(char) < 0){ // When goes to neagative // check the flow again
+      return false
+    }
+    
+  }
+
+  return true;
+}
+
+console.log("Brute Force:", isAnagram(s, t));        // true
+console.log("Wrong Map:", isAnagramWrong(s, t));     // false (fails!)
+console.log("Best Hashmap:", isAnagramBest(s, t));   // true
+
+// ----------------------------------
+// 📌 Explanation and Learning
+// ----------------------------------
+
+/*
+
+✅ Problem Summary:
+  - Check if two strings are anagrams:
+    - Use the same characters
+    - Have same frequency of each character
+    - Order doesn't matter
+
+✅ Your Brute Force:
+  - Used filter and splice — logic is okay-ish but inefficient
+  - O(n^2) due to includes + splice inside loop
+
+❌ Your Second Map Attempt:
+  - Incorrect because it compares based on index, not letter counts
+  - Anagrams can have different positions — wrong logic
+
+⭐ Best Solution:
+  - Uses a HashMap (or object) to count letters from `s`
+  - Then decreases the count for each character from `t`
+  - If mismatch in characters or count drops below 0, return false
+  - If loop completes, return true
+
+📊 Time Complexity:
+  - O(n), where n = length of string
+
+📦 Space Complexity:
+  - O(1) because alphabet has a fixed size (26 lowercase letters), though map technically uses extra space
+
+🎯 Takeaway:
+  - For anagram problems, **counting frequency** is the best approach
+  - HashMap (or Object) is ideal for letter counts
+  - Always think about what "same" means: same values, same count, not position
+
+*/
